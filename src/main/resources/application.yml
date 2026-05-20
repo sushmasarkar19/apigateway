@@ -1,5 +1,6 @@
 server:
   port: 8765
+  forward-headers-strategy: framework
 
 spring:
   application:
@@ -107,7 +108,7 @@ eureka:
 
 # ── JWT ───────────────────────────────────────────────────────────────────────
 jwt:
-  secret: sushgs@5
+  secret: sushg12
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging:
@@ -128,3 +129,10 @@ springdoc:
 
       - name: masterdata-service
         url: /v3/api-docs/masterdata
+    enabled: true
+    disable-swagger-default-url: true
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+    resolve-schema-properties: true
+  override-with-generic-response: false
