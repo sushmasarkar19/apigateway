@@ -59,16 +59,9 @@ spring:
               filters:
                 - RewritePath=/gateway/(?<segment>.*), /olx/${segment}
 
-            # ── 2. OLX-Login protected (JWT required) ─────────────────────
-            - id: olx-login-protected
-              uri: lb://olx-login
-              predicates:
-                - Path=/gateway/user/**
-              filters:
-                - RewritePath=/gateway/(?<segment>.*), /olx/${segment}
-                - JwtAuthenticationFilter
-
-            # ── 3. OLX-Advertise ──────────────────────────────────────────
+            # ── 2. OLX-Advertise user-specific (MUST be before olx-login-protected ────
+            #     because Path=/gateway/user/advertise/** is more specific than
+            #     Path=/gateway/user/**. Spring Cloud Gateway matches routes in order.
             - id: olx-advertise-user
               uri: lb://olx-advertise
               predicates:
@@ -83,6 +76,15 @@ spring:
                 - Path=/gateway/advertise/**
               filters:
                 - RewritePath=/gateway/(?<segment>.*), /${segment}
+                - JwtAuthenticationFilter
+
+            # ── 3. OLX-Login protected (JWT required) ─────────────────────
+            - id: olx-login-protected
+              uri: lb://olx-login
+              predicates:
+                - Path=/gateway/user/**
+              filters:
+                - RewritePath=/gateway/(?<segment>.*), /olx/${segment}
                 - JwtAuthenticationFilter
 
             # ── 4. OLX-Masterdata ─────────────────────────────────────────
