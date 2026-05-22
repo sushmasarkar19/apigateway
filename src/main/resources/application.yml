@@ -20,14 +20,12 @@ spring:
               lower-case-service-id: true
 
           routes:
-
-            # ── 0. Swagger/OpenAPI Routes (PUBLIC - no JWT, must be first) ──
             - id: login-service-docs
               uri: lb://olx-login
               predicates:
                 - Path=/v3/api-docs/login
               filters:
-                - RewritePath=/v3/api-docs/login, /olx/v3/api-docs  # fix: added /olx prefix
+                - RewritePath=/v3/api-docs/login, /olx/v3/api-docs
 
             - id: advertise-service-docs
               uri: lb://olx-advertise
@@ -43,7 +41,6 @@ spring:
               filters:
                 - RewritePath=/v3/api-docs/masterdata, /v3/api-docs
 
-            # ── 1. OLX-Login public (no JWT) ──────────────────────────────
             - id: olx-login-public-authenticate
               uri: lb://olx-login
               predicates:
@@ -59,16 +56,6 @@ spring:
               filters:
                 - RewritePath=/gateway/(?<segment>.*), /olx/${segment}
 
-            # ── 2. OLX-Login protected (JWT required) ─────────────────────
-            - id: olx-login-protected
-              uri: lb://olx-login
-              predicates:
-                - Path=/gateway/user/**
-              filters:
-                - RewritePath=/gateway/(?<segment>.*), /olx/${segment}
-                - JwtAuthenticationFilter
-
-            # ── 3. OLX-Advertise ──────────────────────────────────────────
             - id: olx-advertise-user
               uri: lb://olx-advertise
               predicates:
@@ -76,6 +63,21 @@ spring:
               filters:
                 - RewritePath=/gateway/(?<segment>.*), /${segment}
                 - JwtAuthenticationFilter
+
+            - id: olx-advertise-public-search
+              uri: lb://olx-advertise
+              predicates:
+                - Path=/gateway/advertise/search/**
+              filters:
+                - RewritePath=/gateway/(?<segment>.*), /${segment}
+
+            - id: olx-advertise-public-id
+              uri: lb://olx-advertise
+              predicates:
+                - Path=/gateway/advertise/{advertiseId}
+                - Method=GET
+              filters:
+                - RewritePath=/gateway/advertise/(?<id>[^/]+), /advertise/${id}
 
             - id: olx-advertise
               uri: lb://olx-advertise
@@ -85,14 +87,27 @@ spring:
                 - RewritePath=/gateway/(?<segment>.*), /${segment}
                 - JwtAuthenticationFilter
 
-            # ── 4. OLX-Masterdata ─────────────────────────────────────────
+            - id: olx-login-protected
+              uri: lb://olx-login
+              predicates:
+                - Path=/gateway/user/**
+              filters:
+                - RewritePath=/gateway/(?<segment>.*), /olx/${segment}
+                - JwtAuthenticationFilter
+
             - id: olx-masterdata
               uri: lb://olx-masterdata
               predicates:
                 - Path=/gateway/masterdata/**
               filters:
-                - RewritePath=/gateway/masterdata/(?<segment>.*), /advertise/${segment}
-                - JwtAuthenticationFilter
+                - RewritePath=/gateway/masterdata/(?<segment>.*), /${segment}
+
+            - id: olx-masterdata-docs-mock
+              uri: lb://olx-masterdata
+              predicates:
+                - Path=/gateway/masterdata/v3/api-docs
+              filters:
+                - RewritePath=/gateway/masterdata/v3/api-docs, /v3/api-docs
 
 # ── Eureka ────────────────────────────────────────────────────────────────────
 eureka:
