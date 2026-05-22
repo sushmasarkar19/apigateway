@@ -100,7 +100,7 @@ spring:
               predicates:
                 - Path=/gateway/masterdata/**
               filters:
-                - RewritePath=/gateway/masterdata/(?<segment>.*), /advertise/${segment}
+                - RewritePath=/gateway/masterdata/(?<segment>.*), /${segment}
 
             - id: olx-masterdata-docs-mock
               uri: lb://olx-masterdata
