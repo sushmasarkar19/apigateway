@@ -64,6 +64,21 @@ spring:
                 - RewritePath=/gateway/(?<segment>.*), /${segment}
                 - JwtAuthenticationFilter
 
+            - id: olx-advertise-public-search
+              uri: lb://olx-advertise
+              predicates:
+                - Path=/gateway/advertise/search/**
+              filters:
+                - RewritePath=/gateway/(?<segment>.*), /${segment}
+
+            - id: olx-advertise-public-id
+              uri: lb://olx-advertise
+              predicates:
+                - Path=/gateway/advertise/{advertiseId}
+                - Method=GET
+              filters:
+                - RewritePath=/gateway/advertise/(?<id>[^/]+), /advertise/${id}
+
             - id: olx-advertise
               uri: lb://olx-advertise
               predicates:
@@ -86,7 +101,13 @@ spring:
                 - Path=/gateway/masterdata/**
               filters:
                 - RewritePath=/gateway/masterdata/(?<segment>.*), /advertise/${segment}
-                - JwtAuthenticationFilter
+
+            - id: olx-masterdata-docs-mock
+              uri: lb://olx-masterdata
+              predicates:
+                - Path=/gateway/masterdata/v3/api-docs
+              filters:
+                - RewritePath=/gateway/masterdata/v3/api-docs, /v3/api-docs
 
 # ── Eureka ────────────────────────────────────────────────────────────────────
 eureka:
